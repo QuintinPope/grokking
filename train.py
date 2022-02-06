@@ -175,6 +175,7 @@ def main(args):
             plt.xlabel("Optimization Steps")
             plt.ylabel("Accuracy")
             plt.xscale("log", base=10)
+            plt.yscale("log", base=10)
             plt.savefig("figures/acc.png", dpi=150)
             plt.close()
 
@@ -185,8 +186,14 @@ def main(args):
             plt.xlabel("Optimization Steps")
             plt.ylabel("Loss")
             plt.xscale("log", base=10)
+            plt.yscale("log", base=10)
             plt.savefig("figures/loss.png", dpi=150)
             plt.close()
+            
+            torch.save(train_acc, "raw_numbers/train_acc.pth")
+            torch.save(val_acc, "raw_numbers/val_acc.pth")
+            torch.save(train_loss, "raw_numbers/train_loss.pth")
+            torch.save(val_loss, "raw_numbers/val_loss.pth")
 
 
 if __name__ == "__main__":
