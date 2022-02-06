@@ -8,6 +8,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+import torch_optimizer
+
 
 class Block(nn.Module):
     """
@@ -112,12 +114,19 @@ def main(args):
 
     # For most experiments we used AdamW optimizer with learning rate 10−3,
     # weight decay 1, β1 = 0.9, β2 = 0.98
-    optimizer = getattr(torch.optim, args.optimizer)(
-        model.parameters(),
-        lr=args.lr,
-        weight_decay=args.weight_decay,
-        betas=(args.beta1, args.beta2),
-    )
+    if str.lower(args.optimizer) != "adahessian":
+        optimizer = getattr(torch.optim, args.optimizer)(
+            model.parameters(),
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+            betas=(args.beta1, args.beta2),
+        )
+    else:
+        optimizer = torch_optimizer.Adahessian(
+            model.parameters(),
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+        )
 
     #  linear learning rate warmup over the first 10 updates
     scheduler = torch.optim.lr_scheduler.LambdaLR(
@@ -152,7 +161,10 @@ def main(args):
 
                 if is_train:
                     model.zero_grad()
-                    loss.backward()
+                    if str.lower(args.optimizer) == "adahessian":
+                        loss.backward(create_graph = True)
+                    else:
+                        loss.backward()
                     optimizer.step()
                     scheduler.step()
 
